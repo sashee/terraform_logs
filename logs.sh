@@ -3,7 +3,8 @@
 function get_logs (){ \
 	FUNCTIONNAME=$( \
 		terraform state show $1 | \
-			awk '$1 == "function_name" {print $3}' \
+			sed 's/\x1b\[[0-9;]*m//g' | \
+			awk '/^\s*function_name\y/ {print gensub(/^\"(.*)\"$/, "\\1", "g", $3)}' \
 	); aws logs get-log-events \
 		--limit 100 \
 		--log-group-name "/aws/lambda/$FUNCTIONNAME" \
